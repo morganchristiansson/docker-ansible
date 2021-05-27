@@ -148,13 +148,13 @@ lint-workflow:
 # -------------------------------------------------------------------------------------------------
 
 _build_builder:
-	docker build $(NO_CACHE) -t cytopia/ansible-builder -f ${DIR}/builder ${DIR}
+	docker buildx build --platform linux/amd64,linux/arm64 $(NO_CACHE) -t cytopia/ansible-builder -f ${DIR}/builder ${DIR}
 
 build: _build_builder
 build:
 	@ \
 	if [ "$(FLAVOUR)" = "base" ]; then \
-		docker build \
+		docker buildx build --platform linux/amd64,linux/arm64 \
 			$(NO_CACHE) \
 			--label "org.opencontainers.image.created"="$$(date --rfc-3339=s)" \
 			--label "org.opencontainers.image.revision"="$$(git rev-parse HEAD)" \
@@ -166,7 +166,7 @@ build:
 			echo "Error, HELM variable required."; \
 			exit 1; \
 		fi; \
-		docker build \
+		docker buildx build --platform linux/amd64,linux/arm64 \
 			$(NO_CACHE) \
 			--label "org.opencontainers.image.created"="$$(date --rfc-3339=s)" \
 			--label "org.opencontainers.image.revision"="$$(git rev-parse HEAD)" \
@@ -179,7 +179,7 @@ build:
 			echo "Error, KOPS variable required."; \
 			exit 1; \
 		fi; \
-		docker build \
+		docker buildx build --platform linux/amd64,linux/arm64 \
 			$(NO_CACHE) \
 			--label "org.opencontainers.image.created"="$$(date --rfc-3339=s)" \
 			--label "org.opencontainers.image.revision"="$$(git rev-parse HEAD)" \
@@ -188,7 +188,7 @@ build:
 			--build-arg KOPS=$(KOPS) \
 			-t $(IMAGE):$(ANSIBLE)-$(FLAVOUR)$(KOPS) -f $(DIR)/$(FILE)-$(FLAVOUR) $(DIR); \
 	else \
-		docker build \
+		docker buildx build --platform linux/amd64,linux/arm64 \
 			$(NO_CACHE) \
 			--label "org.opencontainers.image.created"="$$(date --rfc-3339=s)" \
 			--label "org.opencontainers.image.revision"="$$(git rev-parse HEAD)" \
