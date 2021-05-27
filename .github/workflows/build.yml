@@ -31,12 +31,6 @@ jobs:
       fail-fast: False
       matrix:
         version:
-          - '2.5'
-          - '2.6'
-          - '2.7'
-          - '2.8'
-          - '2.9'
-          - '2.10'
           - 'latest'
     steps:
 
@@ -113,6 +107,8 @@ jobs:
           echo "DOCKER_TAG_AZURE=${DOCKER_TAG_AZURE}"   >> ${GITHUB_ENV}
           echo "DOCKER_TAG_AWS=${DOCKER_TAG_AWS}"       >> ${GITHUB_ENV}
           echo "DOCKER_TAG_AWSK8S=${DOCKER_TAG_AWSK8S}" >> ${GITHUB_ENV}
+
+          make login USERNAME=${{ secrets.DOCKERHUB_USERNAME }} PASSWORD=${{ secrets.DOCKERHUB_PASSWORD }}
         env:
           VERSION: ${{ matrix.version }}
 
