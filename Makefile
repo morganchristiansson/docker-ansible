@@ -147,13 +147,13 @@ lint-workflow:
 # -------------------------------------------------------------------------------------------------
 
 build-base-image:
-	docker buildx build --build-arg IMAGE=$(IMAGE) --push --platform linux/amd64,linux/arm64 $(NO_CACHE) -t $(IMAGE)-builder -f ${DIR}/builder ${DIR}
+	docker buildx build --build-arg IMAGE=$(IMAGE) --cache-to=type=inline,mode=max --push --platform linux/amd64,linux/arm64 $(NO_CACHE) -t $(IMAGE)-builder -f ${DIR}/builder ${DIR}
 
 build: build-base-image
 build:
 	@ \
 	if [ "$(FLAVOUR)" = "base" ]; then \
-		docker buildx build --build-arg IMAGE=$(IMAGE) --push --platform linux/amd64,linux/arm64 \
+		docker buildx build --build-arg IMAGE=$(IMAGE) --cache-to=type=inline,mode=max --push --platform linux/amd64,linux/arm64 \
 			$(NO_CACHE) \
 			--label "org.opencontainers.image.created"="$$(date --rfc-3339=s)" \
 			--label "org.opencontainers.image.revision"="$$(git rev-parse HEAD)" \
@@ -165,7 +165,7 @@ build:
 			echo "Error, HELM variable required."; \
 			exit 1; \
 		fi; \
-		docker buildx build --build-arg IMAGE=$(IMAGE) --push --platform linux/amd64,linux/arm64 \
+		docker buildx build --build-arg IMAGE=$(IMAGE) --cache-to=type=inline,mode=max --push --platform linux/amd64,linux/arm64 \
 			$(NO_CACHE) \
 			--label "org.opencontainers.image.created"="$$(date --rfc-3339=s)" \
 			--label "org.opencontainers.image.revision"="$$(git rev-parse HEAD)" \
@@ -178,7 +178,7 @@ build:
 			echo "Error, KOPS variable required."; \
 			exit 1; \
 		fi; \
-		docker buildx build --build-arg IMAGE=$(IMAGE) --push --platform linux/amd64,linux/arm64 \
+		docker buildx build --build-arg IMAGE=$(IMAGE) --cache-to=type=inline,mode=max --push --platform linux/amd64,linux/arm64 \
 			$(NO_CACHE) \
 			--label "org.opencontainers.image.created"="$$(date --rfc-3339=s)" \
 			--label "org.opencontainers.image.revision"="$$(git rev-parse HEAD)" \
@@ -187,7 +187,7 @@ build:
 			--build-arg KOPS=$(KOPS) \
 			-t $(IMAGE):$(ANSIBLE)-$(FLAVOUR)$(KOPS) -f $(DIR)/$(FILE)-$(FLAVOUR) $(DIR); \
 	else \
-		docker buildx build --build-arg IMAGE=$(IMAGE) --push --platform linux/amd64,linux/arm64 \
+		docker buildx build --build-arg IMAGE=$(IMAGE) --cache-to=type=inline,mode=max --push --platform linux/amd64,linux/arm64 \
 			$(NO_CACHE) \
 			--label "org.opencontainers.image.created"="$$(date --rfc-3339=s)" \
 			--label "org.opencontainers.image.revision"="$$(git rev-parse HEAD)" \
