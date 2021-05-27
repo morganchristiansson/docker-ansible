@@ -147,7 +147,7 @@ jobs:
             done;
             return 1;
           }
-          retry make _build_builder
+          retry make build-base-image
         env:
           VERSION: ${{ matrix.version }}
           RETRIES: 20

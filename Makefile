@@ -147,10 +147,10 @@ lint-workflow:
 # Build Targets
 # -------------------------------------------------------------------------------------------------
 
-_build_builder:
+build-base-image:
 	docker buildx build --build-arg IMAGE=$(IMAGE) --push --platform linux/amd64,linux/arm64 $(NO_CACHE) -t $(IMAGE)-builder -f ${DIR}/builder ${DIR}
 
-build: _build_builder
+build: build-base-image
 build:
 	@ \
 	if [ "$(FLAVOUR)" = "base" ]; then \
