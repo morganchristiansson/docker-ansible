@@ -107,25 +107,6 @@ jobs:
       # ------------------------------------------------------------
       # Builder
       # ------------------------------------------------------------
-      - name: Pull Base Image
-        run: |
-          retry() {
-            for n in $(seq ${RETRIES}); do
-              echo "[${n}/${RETRIES}] ${*}";
-              if eval "${*}"; then
-                echo "[SUCC] ${n}/${RETRIES}";
-                return 0;
-              fi;
-              sleep ${PAUSE};
-              echo "[FAIL] ${n}/${RETRIES}";
-            done;
-            return 1;
-          }
-          retry make pull-base-image
-        env:
-          RETRIES: 20
-          PAUSE: 10
-
       - name: Build Builder Image
         run: |
           retry() {
@@ -140,7 +121,7 @@ jobs:
             done;
             return 1;
           }
-          retry make _build_builder
+          retry make build-base-image
         env:
           VERSION: ${{ matrix.version }}
           RETRIES: 20

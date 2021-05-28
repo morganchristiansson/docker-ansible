@@ -5,7 +5,7 @@ endif
 # -------------------------------------------------------------------------------------------------
 # Default configuration
 # -------------------------------------------------------------------------------------------------
-.PHONY: lint build rebuild test tag pull-base-image login push enter
+.PHONY: lint build rebuild test tag login push enter
 
 CURRENT_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
@@ -20,7 +20,7 @@ FL_IGNORES = .git/,.github/,tests/
 # -------------------------------------------------------------------------------------------------
 DIR = Dockerfiles/
 FILE = Dockerfile
-IMAGE = cytopia/ansible
+IMAGE = morganchristiansson/ansible
 TAG = latest
 NO_CACHE =
 
@@ -88,7 +88,6 @@ help:
 	@echo "--------------------------------------------------------------------------------"
 	@echo
 	@echo "lint                                      Lint repository"
-	@echo "pull-base-image                           Pull the base Docker image"
 	@echo "login [USERNAME=] [PASSWORD=]             Login to Dockerhub"
 	@echo "push  [TAG=]                              Push Docker image to Dockerhub"
 	@echo "enter [TAG=]                              Run and enter Docker built image"
@@ -147,14 +146,16 @@ lint-workflow:
 # Build Targets
 # -------------------------------------------------------------------------------------------------
 
-_build_builder:
-	docker build $(NO_CACHE) -t cytopia/ansible-builder -f ${DIR}/builder ${DIR}
+build-base-image:
+	docker buildx build --build-arg IMAGE=$(IMAGE) --cache-from=type=registry,ref=$(IMAGE)-builder --cache-to=type=inline,mode=max --push --platform linux/amd64 \
+		$(NO_CACHE) \
+		-t $(IMAGE)-builder -f ${DIR}/builder ${DIR}
 
-build: _build_builder
+build: build-base-image
 build:
 	@ \
 	if [ "$(FLAVOUR)" = "base" ]; then \
-		docker build \
+		docker buildx build --build-arg IMAGE=$(IMAGE) --cache-from=type=registry,ref=$(IMAGE):$(ANSIBLE) --cache-to=type=inline,mode=max --push --platform linux/amd64 \
 			$(NO_CACHE) \
 			--label "org.opencontainers.image.created"="$$(date --rfc-3339=s)" \
 			--label "org.opencontainers.image.revision"="$$(git rev-parse HEAD)" \
@@ -166,7 +167,7 @@ build:
 			echo "Error, HELM variable required."; \
 			exit 1; \
 		fi; \
-		docker build \
+		docker buildx build --build-arg IMAGE=$(IMAGE) --cache-to=type=inline,mode=max --push --platform linux/amd64,linux/arm64 \
 			$(NO_CACHE) \
 			--label "org.opencontainers.image.created"="$$(date --rfc-3339=s)" \
 			--label "org.opencontainers.image.revision"="$$(git rev-parse HEAD)" \
@@ -179,7 +180,7 @@ build:
 			echo "Error, KOPS variable required."; \
 			exit 1; \
 		fi; \
-		docker build \
+		docker buildx build --build-arg IMAGE=$(IMAGE) --cache-to=type=inline,mode=max --push --platform linux/amd64,linux/arm64 \
 			$(NO_CACHE) \
 			--label "org.opencontainers.image.created"="$$(date --rfc-3339=s)" \
 			--label "org.opencontainers.image.revision"="$$(git rev-parse HEAD)" \
@@ -188,7 +189,7 @@ build:
 			--build-arg KOPS=$(KOPS) \
 			-t $(IMAGE):$(ANSIBLE)-$(FLAVOUR)$(KOPS) -f $(DIR)/$(FILE)-$(FLAVOUR) $(DIR); \
 	else \
-		docker build \
+		docker buildx build --build-arg IMAGE=$(IMAGE) --cache-to=type=inline,mode=max --push --platform linux/amd64,linux/arm64 \
 			$(NO_CACHE) \
 			--label "org.opencontainers.image.created"="$$(date --rfc-3339=s)" \
 			--label "org.opencontainers.image.revision"="$$(git rev-parse HEAD)" \
@@ -198,7 +199,6 @@ build:
 	fi
 
 rebuild: NO_CACHE=--no-cache
-rebuild: pull-base-image
 rebuild: build
 
 
@@ -721,13 +721,6 @@ endif
 # --------------------------------------------------------------------------------------------------
 # Helper Targets
 # --------------------------------------------------------------------------------------------------
-pull-base-image:
-	@grep -E '^\s*FROM' $(DIR)/Dockerfile \
-		| sed -e 's/^FROM//g' -e 's/[[:space:]]*as[[:space:]]*.*$$//g' \
-		| sort -u \
-		| grep -v 'cytopia/' \
-		| xargs -n1 docker pull;
-
 enter:
 	if [ "$(FLAVOUR)" = "base" ]; then \
 		docker run --rm -it $(IMAGE):$(ANSIBLE); \
