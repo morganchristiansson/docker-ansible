@@ -147,13 +147,15 @@ lint-workflow:
 # -------------------------------------------------------------------------------------------------
 
 build-base-image:
-	docker buildx build --build-arg IMAGE=$(IMAGE) --cache-to=type=inline,mode=max --push --platform linux/amd64,linux/arm64 $(NO_CACHE) -t $(IMAGE)-builder -f ${DIR}/builder ${DIR}
+	docker buildx build --build-arg IMAGE=$(IMAGE) --cache-from=type=registry,ref=$(IMAGE)-builder --cache-to=type=inline,mode=max --push --platform linux/amd64,linux/arm64 \
+		$(NO_CACHE) \
+		-t $(IMAGE)-builder -f ${DIR}/builder ${DIR}
 
 build: build-base-image
 build:
 	@ \
 	if [ "$(FLAVOUR)" = "base" ]; then \
-		docker buildx build --build-arg IMAGE=$(IMAGE) --cache-to=type=inline,mode=max --push --platform linux/amd64,linux/arm64 \
+		docker buildx build --build-arg IMAGE=$(IMAGE) --cache-from=type=registry,ref=$(IMAGE):$(ANSIBLE) --cache-to=type=inline,mode=max --push --platform linux/amd64,linux/arm64 \
 			$(NO_CACHE) \
 			--label "org.opencontainers.image.created"="$$(date --rfc-3339=s)" \
 			--label "org.opencontainers.image.revision"="$$(git rev-parse HEAD)" \
