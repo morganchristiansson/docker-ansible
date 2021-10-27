@@ -123,7 +123,10 @@ jobs:
       # ------------------------------------------------------------
       - name: Build Builder Image
         run: |
+          # Login
+          scripts/retry make login USERNAME=${{ secrets.DOCKERHUB_USERNAME }} PASSWORD=${{ secrets.DOCKERHUB_PASSWORD }}
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+
           docker buildx create --use ; docker buildx inspect
           scripts/retry make _build_builder
         env:
@@ -205,9 +208,6 @@ jobs:
           echo "GIT_TYPE=${GIT_TYPE}"
           echo "GIT_SLUG=${GIT_SLUG}"
           echo "DOCKER_TAG_AWSHELM=${DOCKER_TAG_AWSHELM}"
-
-          # Login
-          scripts/retry make login USERNAME=${{ secrets.DOCKERHUB_USERNAME }} PASSWORD=${{ secrets.DOCKERHUB_PASSWORD }}
 
           # Create multi-arch manifest
           scripts/retry make manifest ANSIBLE=${VERSION} FLAVOUR=awshelm HELM=${HELM} TAG=${DOCKER_TAG_AWSHELM}
