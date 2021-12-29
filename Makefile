@@ -154,6 +154,7 @@ lint-workflow:
 _build_builder:
 	docker buildx build \
 		$(NO_CACHE) \
+		--build-arg VERSION=$(ANSIBLE) \
 		--build-arg PLATFORM=$(PLATFORM) \
 		--cache-from type=registry,ref=$(IMAGE_CACHE_WARMUP):cache-builder-$(PLATFORM) \
 		--cache-from type=registry,ref=$(IMAGE_CACHE):cache-builder-$(PLATFORM) \
